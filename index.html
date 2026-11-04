@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0a0521">
+  <meta name="description" content="Calculadora educativa de diluciones, molaridad y normalidad con unidades, fórmulas y procedimiento paso a paso.">
+  <title>Manrique Pharma — Calculadora de soluciones</title>
+  <link rel="icon" type="image/png" href="./manrique-pharma.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&family=Taviraj:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --p-gold: oklch(0.79 0.14 88);
+      --p-gold-light: oklch(0.9 0.11 94);
+      --p-crimson: oklch(0.48 0.19 15);
+      --p-purple: oklch(0.55 0.23 295);
+      --p-space: oklch(0.135 0.035 305);
+      --p-surface: oklch(0.19 0.05 305);
+      --p-raised: oklch(0.22 0.065 305);
+      --p-cream: oklch(0.93 0.025 85);
+      --p-muted: oklch(0.78 0.035 305);
+      --surface: var(--p-space);
+      --surface-raised: var(--p-surface);
+      --text: var(--p-cream);
+      --text-muted: var(--p-muted);
+      --accent: var(--p-gold);
+      --line: color-mix(in srgb, var(--p-gold) 26%, transparent);
+      --error: oklch(0.78 0.14 15);
+      --font-sans: "Manrope", "Avenir Next", sans-serif;
+      --font-display: "Taviraj", Georgia, serif;
+      --font-mono: "IBM Plex Mono", monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      min-height: 100dvh;
+      overflow-x: hidden;
+      background: var(--surface);
+      color: var(--text);
+      font: 16px/1.65 var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 10% 8%, color-mix(in srgb, var(--p-purple) 22%, transparent), transparent 30%),
+        radial-gradient(circle at 90% 20%, color-mix(in srgb, var(--p-crimson) 19%, transparent), transparent 28%),
+        radial-gradient(circle at 60% 90%, color-mix(in srgb, var(--p-gold) 10%, transparent), transparent 30%);
+    }
+    button, input, select { font: inherit; }
+    button, select { cursor: pointer; }
+    button { color: inherit; }
+    a { color: inherit; }
+    [hidden] { display: none !important; }
+    ::selection { background: var(--p-gold); color: var(--p-space); }
+    :focus-visible {
+      outline: 3px solid var(--p-gold-light);
+      outline-offset: 3px;
+      box-shadow: 0 0 0 2px var(--p-purple), 0 0 20px color-mix(in srgb, var(--p-gold) 35%, transparent);
+    }
+    .skip-link {
+      position: absolute;
+      left: 16px;
+      top: -80px;
+      z-index: 10;
+      background: var(--p-gold);
+      color: var(--p-space);
+      padding: 10px 16px;
+    }
+    .skip-link:focus { top: 16px; }
+    .sparkle-field { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+    .sparkle {
+      position: absolute;
+      left: var(--x);
+      top: var(--y);
+      width: var(--size);
+      height: auto;
+      aspect-ratio: 1;
+      object-fit: contain;
+      opacity: .15;
+      filter: drop-shadow(0 0 7px color-mix(in srgb, var(--spark) 65%, transparent));
+      animation: twinkle var(--duration) ease-in-out var(--delay) infinite;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: .15; transform: translateY(0) scale(.65); }
+      50% { opacity: .95; transform: translateY(-8px) scale(1.15); }
+    }
+    .site-header, main, .site-footer { position: relative; z-index: 1; }
+    .wrap { width: min(100%, 1240px); margin-inline: auto; padding-inline: 20px; }
+    .site-header {
+      min-height: 88px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid var(--line);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .brand-logo { width: 52px; height: 52px; object-fit: contain; filter: drop-shadow(0 0 10px color-mix(in srgb, var(--p-gold) 45%, transparent)); }
+    .brand-text { font: 500 21px/1 var(--font-display); letter-spacing: .01em; text-transform: none; white-space: nowrap; }
+    .brand-text strong { color: var(--p-gold-light); font-weight: 500; }
+    .header-note { color: var(--p-gold-light); text-align: right; }
+    .intro { display: grid; gap: 32px; padding-block: 52px 44px; }
+    .kicker, .mini-label {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .kicker { margin-bottom: 16px; color: var(--p-gold-light); }
+    h1 {
+      max-width: 800px;
+      font-family: var(--font-display);
+      font-size: clamp(44px, 10vw, 82px);
+      line-height: 1.02;
+      letter-spacing: -.045em;
+      font-weight: 500;
+    }
+    h1 span { position: relative; z-index: 0; white-space: nowrap; color: var(--p-gold-light); text-shadow: 0 0 26px color-mix(in srgb, var(--p-gold) 22%, transparent); }
+    h1 span::after {
+      content: "";
+      position: absolute;
+      height: 3px;
+      left: 2px;
+      right: 2px;
+      bottom: -5px;
+      background: linear-gradient(90deg, var(--p-gold), var(--p-crimson), var(--p-purple));
+      box-shadow: 0 0 12px color-mix(in srgb, var(--p-gold) 45%, transparent);
+    }
+    .intro-copy > p:last-child { max-width: 62ch; margin-top: 26px; color: var(--text-muted); }
+    .mini-guide {
+      align-self: end;
+      border-top: 1px solid var(--p-gold);
+      padding: 18px 18px 0;
+      max-width: 420px;
+      background: linear-gradient(135deg, color-mix(in srgb, var(--p-purple) 10%, transparent), transparent);
+    }
+    .mini-guide .mini-label { display: block; margin-bottom: 8px; color: var(--p-gold-light); }
+    .mini-guide p { color: var(--text-muted); font-size: 14px; line-height: 1.65; }
+    .mini-guide strong { color: var(--text); }
+    .calculator-shell {
+      overflow: hidden;
+      border: 1px solid color-mix(in srgb, var(--p-gold) 45%, transparent);
+      border-radius: 18px;
+      background: color-mix(in srgb, var(--p-space) 82%, transparent);
+      box-shadow: 0 24px 90px color-mix(in srgb, var(--p-purple) 17%, transparent), 0 0 35px color-mix(in srgb, var(--p-crimson) 8%, transparent);
+      backdrop-filter: blur(18px);
+    }
+    .tabs { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid var(--line); }
+    .tab {
+      min-height: 58px;
+      border: 0;
+      border-right: 1px solid var(--line);
+      background: color-mix(in srgb, var(--p-surface) 70%, transparent);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 700;
+      transition: background-color 180ms ease-out, color 180ms ease-out, box-shadow 180ms ease-out;
+    }
+    .tab:last-child { border-right: 0; }
+    .tab:hover { background: color-mix(in srgb, var(--p-purple) 24%, var(--p-surface)); color: var(--p-cream); }
+    .tab[aria-selected="true"] { background: var(--p-gold); color: var(--p-space); box-shadow: inset 0 -3px 0 var(--p-gold-light); }
+    .calculator-grid { display: grid; }
+    .work-area { padding: 32px 20px 38px; }
+    .panel-heading { margin-bottom: 28px; }
+    .panel-heading h2 { color: var(--p-cream); font: 500 32px/1.2 var(--font-display); letter-spacing: -.025em; }
+    .panel-heading p { margin-top: 6px; color: var(--text-muted); font-size: 14px; }
+    .formula {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 8px 12px;
+      border: 1px solid color-mix(in srgb, var(--p-purple) 50%, transparent);
+      border-radius: 6px;
+      background: color-mix(in srgb, var(--p-purple) 15%, transparent);
+      color: var(--p-gold-light);
+      box-shadow: 0 0 18px color-mix(in srgb, var(--p-purple) 12%, transparent);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .fields-grid { display: grid; gap: 24px 16px; }
+    .field { min-width: 0; }
+    .field.full { grid-column: 1 / -1; }
+    .field label, .group-label { display: block; margin-bottom: 5px; color: var(--p-cream); font-size: 13px; font-weight: 700; }
+    .input-shell {
+      display: flex;
+      align-items: center;
+      min-height: 52px;
+      border-bottom: 1px solid color-mix(in srgb, var(--p-gold) 50%, transparent);
+      transition: border-color 180ms ease-out, background-color 180ms ease-out, box-shadow 180ms ease-out;
+    }
+    .input-shell:focus-within {
+      border-bottom: 2px solid var(--p-gold);
+      background: color-mix(in srgb, var(--p-purple) 12%, transparent);
+      box-shadow: 0 8px 18px -16px var(--p-gold);
+    }
+    .input-shell input, .input-shell select {
+      width: 100%;
+      min-width: 0;
+      min-height: 50px;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 16px;
+      font-variant-numeric: tabular-nums;
+      color-scheme: dark;
+    }
+    .input-shell select option { background: var(--p-surface); color: var(--p-cream); }
+    .input-shell input::placeholder { color: var(--text-muted); opacity: .65; }
+    .input-shell select { padding-right: 4px; }
+    .input-shell .unit { flex: 0 0 auto; padding-left: 10px; font: 13px var(--font-mono); color: var(--p-gold-light); }
+    .field-hint { display: block; margin-top: 5px; color: var(--text-muted); font-size: 12px; line-height: 1.5; }
+    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 22px; margin-top: 34px; }
+    .primary-button {
+      min-height: 50px;
+      min-width: 142px;
+      padding: 12px 22px;
+      border: 1px solid var(--p-gold-light);
+      border-radius: 7px;
+      background: linear-gradient(135deg, var(--p-gold-light), var(--p-gold));
+      color: var(--p-space);
+      font-weight: 800;
+      transform: translate(-5px, -5px);
+      box-shadow: 5px 5px 0 var(--p-crimson), 0 0 24px color-mix(in srgb, var(--p-gold) 20%, transparent);
+      transition: transform 140ms ease-out, box-shadow 140ms ease-out;
+    }
+    .primary-button:hover { transform: translate(-3px, -3px); box-shadow: 3px 3px 0 var(--p-crimson), 0 0 30px color-mix(in srgb, var(--p-gold) 35%, transparent); }
+    .primary-button:active { transform: translate(0, 0); box-shadow: 0 0 0 var(--p-crimson); }
+    .text-button { min-height: 48px; border: 0; border-bottom: 1px solid var(--p-gold); background: transparent; color: var(--p-cream); font-weight: 700; }
+    .text-button:hover { color: var(--p-gold-light); }
+    .error-message { margin-top: 22px; color: var(--error); font-size: 14px; font-weight: 700; }
+    .result-panel {
+      min-width: 0;
+      background:
+        radial-gradient(circle at 90% 5%, color-mix(in srgb, var(--p-crimson) 30%, transparent), transparent 30%),
+        linear-gradient(145deg, color-mix(in srgb, var(--p-crimson) 16%, var(--p-space)), var(--p-surface) 52%, color-mix(in srgb, var(--p-purple) 20%, var(--p-space)));
+      color: var(--p-cream);
+      padding: 32px 20px;
+      border-top: 1px solid var(--line);
+    }
+    .result-panel .mini-label { color: var(--p-gold-light); }
+    .empty-result { padding-top: 56px; }
+    .empty-symbol { color: var(--p-gold-light); font: 500 clamp(38px, 11vw, 62px)/1.2 var(--font-mono); letter-spacing: -.06em; text-shadow: 0 0 24px color-mix(in srgb, var(--p-gold) 20%, transparent); }
+    .empty-result p { max-width: 30ch; margin-top: 16px; color: var(--text-muted); font-size: 14px; }
+    .result-content { padding-top: 28px; }
+    .result-label { color: var(--text-muted); font-size: 13px; }
+    .result-value {
+      display: block;
+      margin-block: 6px 12px;
+      color: var(--p-gold-light);
+      font: 600 clamp(28px, 8vw, 48px)/1.2 var(--font-mono);
+      letter-spacing: -.055em;
+      overflow-wrap: anywhere;
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 0 24px color-mix(in srgb, var(--p-gold) 35%, transparent);
+    }
+    .result-extra { color: var(--text-muted); font-size: 13px; line-height: 1.7; }
+    .result-extra strong { color: var(--p-cream); }
+    .result-extra p + p { margin-top: 4px; }
+    .procedure { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--line); }
+    .procedure h3 { font-size: 15px; margin-bottom: 14px; color: var(--p-gold-light); }
+    .procedure ol { list-style: none; display: grid; gap: 16px; counter-reset: steps; }
+    .procedure li { position: relative; padding-left: 28px; color: var(--text-muted); font-size: 13px; counter-increment: steps; }
+    .procedure li::before { content: counter(steps) "."; position: absolute; left: 0; color: var(--p-gold-light); font-family: var(--font-mono); }
+    .math { display: block; margin-top: 4px; color: var(--p-cream); font-family: var(--font-mono); overflow-wrap: anywhere; }
+    .copy-button { margin-top: 28px; color: var(--p-cream); border-color: var(--p-gold); }
+    .copy-button:hover { color: var(--p-gold-light); }
+    .reference { display: grid; gap: 0; padding-block: 36px 52px; }
+    .reference details { border-bottom: 1px solid var(--line); }
+    .reference summary { min-height: 58px; display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; font-weight: 700; list-style: none; transition: color 180ms ease-out; }
+    .reference summary:hover { color: var(--p-gold-light); }
+    .reference summary::-webkit-details-marker { display: none; }
+    .reference summary::after { content: "+"; color: var(--p-gold-light); font: 20px var(--font-mono); }
+    .reference details[open] summary::after { content: "−"; }
+    .reference details p { max-width: 75ch; padding: 0 0 20px; color: var(--text-muted); font-size: 14px; }
+    .reference strong { color: var(--p-gold-light); }
+    .site-footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; padding-block: 24px 32px; border-top: 1px solid var(--line); color: var(--text-muted); font: 12px/1.6 var(--font-mono); text-transform: uppercase; letter-spacing: .04em; }
+    @media (max-width: 559px) {
+      .header-note { display: none; }
+    }
+    @media (min-width: 560px) {
+      .wrap { padding-inline: 32px; }
+      .work-area, .result-panel { padding-inline: 32px; }
+      .fields-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .intro { padding-block: 68px 52px; }
+    }
+    @media (min-width: 900px) {
+      .intro { grid-template-columns: 1.5fr .7fr; gap: 64px; }
+      .calculator-grid { grid-template-columns: minmax(0, 1.25fr) minmax(300px, .75fr); }
+      .work-area { padding: 40px; }
+      .result-panel { padding: 40px 32px; border-top: 0; border-left: 1px solid var(--line); }
+      .fields-grid { gap: 28px 24px; }
+      .reference { padding-block: 52px 68px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .sparkle { opacity: .45; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sparkle-field" id="sparkle-field" aria-hidden="true"></div>
+  <a class="skip-link" href="#calculadora">Saltar a la calculadora</a>
+  <header class="site-header wrap">
+    <a class="brand" href="#top" aria-label="Manrique Pharma, volver al inicio"><img class="brand-logo" src="./manrique-pharma.png" alt="" width="52" height="52"><span class="brand-text">Manrique <strong>Pharma</strong></span></a>
+    <p class="header-note">Química cuantitativa</p>
+  </header>
+
+  <main id="top" class="wrap">
+    <section class="intro" aria-labelledby="page-title">
+      <div class="intro-copy">
+        <p class="kicker">Diluciones · Molaridad · Normalidad</p>
+        <h1 id="page-title">De la fórmula<br><span>al resultado.</span></h1>
+        <p>Calcula lo que necesitas, convierte las unidades y revisa el procedimiento. Sin saltos mágicos: cada resultado viene con su fórmula y el reemplazo de datos.</p>
+      </div>
+      <aside class="mini-guide" aria-label="Regla importante">
+        <span class="mini-label">Antes de empezar</span>
+        <p><strong>Las unidades mandan.</strong> En una dilución, C₁ y C₂ deben estar en la misma unidad. Para molaridad y normalidad, el volumen se convierte a litros.</p>
+      </aside>
+    </section>
+
+    <section class="calculator-shell" id="calculadora" aria-label="Calculadora de soluciones">
+      <div class="tabs" role="tablist" aria-label="Tipo de cálculo">
+        <button class="tab" id="tab-dilution" type="button" role="tab" aria-selected="true" aria-controls="panel-dilution" data-tab="dilution">Diluciones</button>
+        <button class="tab" id="tab-molarity" type="button" role="tab" aria-selected="false" aria-controls="panel-molarity" data-tab="molarity" tabindex="-1">Molaridad</button>
+        <button class="tab" id="tab-normality" type="button" role="tab" aria-selected="false" aria-controls="panel-normality" data-tab="normality" tabindex="-1">Normalidad</button>
+      </div>
+
+      <div class="calculator-grid">
+        <div class="work-area">
+          <section class="calculator-panel" id="panel-dilution" role="tabpanel" aria-labelledby="tab-dilution">
+            <div class="panel-heading">
+              <h2>Diluciones</h2>
+              <p>Relaciona una solución concentrada con su solución diluida.</p>
+              <span class="formula">C₁ × V₁ = C₂ × V₂</span>
+            </div>
+            <form id="form-dilution" novalidate>
+              <div class="fields-grid">
+                <div class="field full">
+                  <label for="d-target">¿Qué quieres calcular?</label>
+                  <div class="input-shell">
+                    <select id="d-target" name="target">
+                      <option value="v1">V₁ — volumen concentrado</option>
+                      <option value="v2">V₂ — volumen final</option>
+                      <option value="c2">C₂ — concentración final</option>
+                      <option value="c1">C₁ — concentración inicial</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="field full">
+                  <label for="d-unit">Unidad para ambas concentraciones</label>
+                  <div class="input-shell">
+                    <select id="d-unit">
+                      <option value="M">M — mol/L</option>
+                      <option value="mM">mM — mmol/L</option>
+                      <option value="g/L">g/L</option>
+                      <option value="mg/mL">mg/mL</option>
+                      <option value="%">% — mismo tipo de porcentaje</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="field" data-d-field="c1">
+                  <label for="d-c1">Concentración inicial (C₁)</label>
+                  <div class="input-shell"><input id="d-c1" type="text" inputmode="decimal" autocomplete="off" placeholder="Ej.: 1"><span class="unit" data-d-unit>M</span></div>
+                </div>
+                <div class="field" data-d-field="c2">
+                  <label for="d-c2">Concentración final (C₂)</label>
+                  <div class="input-shell"><input id="d-c2" type="text" inputmode="decimal" autocomplete="off" placeholder="Ej.: 0,1"><span class="unit" data-d-unit>M</span></div>
+                </div>
+                <div class="field" data-d-field="v1">
+                  <label for="d-v1">Volumen inicial (V₁)</label>
+                  <div class="input-shell"><input id="d-v1" type="text" inputmode="decimal" autocomplete="off" placeholder="Ej.: 25"><select id="d-v1-unit" aria-label="Unidad de V₁"><option value="mL">mL</option><option value="L">L</option></select></div>
+                </div>
+                <div class="field" data-d-field="v2">
+                  <label for="d-v2">Volumen final (V₂)</label>
+                  <div class="input-shell"><input id="d-v2" type="text" inputmode="decimal" autocomplete="off" placeholder="Ej.: 250"><select id="d-v2-unit" aria-label="Unidad de V₂"><option value="mL">mL</option><option value="L">L</option></select></div>
+                </div>
+              </div>
+              <div class="actions"><button class="primary-button" type="submit">Calcular</button><button class="text-button" type="reset">Limpiar</button></div>
+              <p class="error-message" id="d-error" role="alert" hidden></p>
+            </form>
+          </section>
+
+          <section class="calculator-panel" id="panel-molarity" role="tabpanel" aria-labelledby="tab-molarity" hidden>
+            <div class="panel-heading">
+              <h2>Molaridad</h2>
+              <p>Calcula moles de soluto por litro de solución o la masa necesaria.</p>
+              <span class="formula">M = m ÷ (PM × V)</span>
+            </div>
+            <form id="form-molarity" novalidate>
+              <div class="fields-grid">
+                <div class="field full">
+                  <label for="m-mode">¿Qué quieres hacer?</label>
+                  <div class="input-shell"><select id="m-mode"><option value="prepare">Masa para preparar</option><option value="calculate">Molaridad desde una masa</option></select></div>
+                </div>
+                <div class="field" data-m-field="concentration">
+                  <label for="m-concentration">Molaridad deseada (M)</label>
+                  <div class="input-shell"><input id="m-concentration" type="text" inputmode="decimal" autocomplete="off" placeholder="Ej.: 0,1"><select id="m-concentration-unit" aria-label="Unidad de molaridad"><option value="M">M</option><option value="mM">mM</option><option value="uM">µM</option></select></div>
+                </div>
+                <div class="field" data-m-field="mass" hidden>
+                  <label for="m-mass">Masa de soluto (m)</label>
+                  <div class="input-shell"><input id="m-mass" type="text" inputmode="decimal" autocomplete="off" placeholder="Ej.: 1,461"><select id="m-mass-unit" aria-label="Unidad de masa"><option value="g">g</option><option value="mg">mg</option></select></div>
+                </div>
+                <div class="field">
+                  <label for="m-volume">Volumen final de solución (V)</label>
+                  <div class="input-shell"><input id="m-volume" type="text" inputmode="decimal" autocomplete="off" placeholder="Ej.: 250"><select id="m-volume-unit" aria-label="Unidad de volumen"><option value="mL">mL</option><option value="L">L</option></select></div>
+                </div>
+                <div class="field">
+                  <label for="m-pm">Peso o masa molar (PM)</label>
+                  <div class="input-shell"><input id="m-pm" type="text" inputmode="decimal" autocomplete="off" placeholder="Ej.: 58,44"><span class="unit">g/mol</span></div>
+                  <span class="field-hint">Búscalo en la ficha o etiqueta del reactivo.</span>
+                </div>
+              </div>
+              <div class="actions"><button class="primary-button" type="submit">Calcular</button><button class="text-button" type="reset">Limpiar</button></div>
+              <p class="error-message" id="m-error" role="alert" hidden></p>
+            </form>
+          </section>
+
+          <section class="calculator-panel" id="panel-normality" role="tabpanel" aria-labelledby="tab-normality" hidden>
+            <div class="panel-heading">
+              <h2>Normalidad</h2>
+              <p>Trabaja con equivalentes por litro de solución.</p>
+              <span class="formula">N = M × n &nbsp;·&nbsp; N = (m × n) ÷ (PM × V)</span>
+            </div>
+            <form id="form-normality" novalidate>
+              <div class="fields-grid">
+                <div class="field full">
+                  <label for="n-mode">¿Qué quieres hacer?</label>
+                  <div class="input-shell"><select id="n-mode"><option value="convert">De molaridad a normalidad</option><option value="prepare">Masa para preparar</option><option value="calculate">Normalidad desde una masa</option></select></div>
+                </div>
+                <div class="field" data-n-field="molarity">
+                  <label for="n-molarity">Molaridad (M)</label>
+                  <div class="input-shell"><input id="n-molarity" type="text" inputmode="decimal" autocomplete="off" placeholder="Ej.: 0,1"><span class="unit">mol/L</span></div>
+                </div>
+                <div class="field" data-n-field="normality" hidden>
+                  <label for="n-normality">Normalidad deseada (N)</label>
+                  <div class="input-shell"><input id="n-normality" type="text" inputmode="decimal" autocomplete="off" placeholder="Ej.: 0,1"><span class="unit">eq/L</span></div>
+                </div>
+                <div class="field" data-n-field="mass" hidden>
+                  <label for="n-mass">Masa de soluto (m)</label>
+                  <div class="input-shell"><input id="n-mass" type="text" inputmode="decimal" autocomplete="off" placeholder="Ej.: 1"><select id="n-mass-unit" aria-label="Unidad de masa"><option value="g">g</option><option value="mg">mg</option></select></div>
+                </div>
+                <div class="field" data-n-field="volume" hidden>
+                  <label for="n-volume">Volumen final de solución (V)</label>
+                  <div class="input-shell"><input id="n-volume" type="text" inputmode="decimal" autocomplete="off" placeholder="Ej.: 250"><select id="n-volume-unit" aria-label="Unidad de volumen"><option value="mL">mL</option><option value="L">L</option></select></div>
+                </div>
+                <div class="field" data-n-field="pm" hidden>
+                  <label for="n-pm">Peso o masa molar (PM)</label>
+                  <div class="input-shell"><input id="n-pm" type="text" inputmode="decimal" autocomplete="off" placeholder="Ej.: 40"><span class="unit">g/mol</span></div>
+                </div>
+                <div class="field full">
+                  <label for="n-factor">Factor n (equivalentes por mol)</label>
+                  <div class="input-shell"><input id="n-factor" type="text" inputmode="decimal" autocomplete="off" placeholder="Ej.: 1"><span class="unit">eq/mol</span></div>
+                  <span class="field-hint">Depende de la reacción. Para HCl o NaOH suele ser 1; para H₂SO₄ como ácido diprótico suele ser 2.</span>
+                </div>
+              </div>
+              <div class="actions"><button class="primary-button" type="submit">Calcular</button><button class="text-button" type="reset">Limpiar</button></div>
+              <p class="error-message" id="n-error" role="alert" hidden></p>
+            </form>
+          </section>
+        </div>
+
+        <aside class="result-panel" aria-live="polite" aria-atomic="true">
+          <span class="mini-label">Resultado explicado</span>
+          <div class="empty-result" id="result-empty">
+            <div class="empty-symbol" id="empty-symbol">C₁V₁ = C₂V₂</div>
+            <p>Completa los datos y pulsa <strong>Calcular</strong>. Aquí verás el resultado y cada paso.</p>
+          </div>
+          <div class="result-content" id="result-content" hidden>
+            <p class="result-label" id="result-label"></p>
+            <output class="result-value" id="result-value"></output>
+            <div class="result-extra" id="result-extra"></div>
+            <div class="procedure">
+              <h3>Así se resuelve</h3>
+              <ol id="result-steps"></ol>
+            </div>
+            <button class="text-button copy-button" id="copy-result" type="button">Copiar resultado</button>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="reference" aria-label="Notas rápidas de estudio">
+      <details>
+        <summary>¿Qué significa aforar?</summary>
+        <p>Significa <strong>llevar la solución hasta el volumen final</strong> con solvente, usando el material volumétrico adecuado. Si preparas 250 mL, no necesariamente agregas 250 mL de solvente: primero disuelves y luego aforas hasta la marca de 250 mL.</p>
+      </details>
+      <details>
+        <summary>¿Cómo sé qué valor de n usar?</summary>
+        <p><strong>n representa los equivalentes que aporta cada mol en una reacción concreta.</strong> En ácidos y bases suele relacionarse con H⁺ u OH⁻ intercambiados; en sales y reacciones redox puede cambiar. Si el enunciado o tu profesora indica otro criterio, usa ese. La normalidad no es una propiedad fija del compuesto sin contexto.</p>
+      </details>
+      <details>
+        <summary>Guía de símbolos</summary>
+        <p><strong>C:</strong> concentración · <strong>V:</strong> volumen · <strong>m:</strong> masa · <strong>PM:</strong> peso o masa molar en g/mol · <strong>M:</strong> molaridad en mol/L · <strong>N:</strong> normalidad en eq/L · <strong>n:</strong> equivalentes por mol.</p>
+      </details>
+    </section>
+  </main>
+
+  <footer class="site-footer wrap">
+    <span>Sitio creado por Mon</span>
+    <span>Herramienta educativa · Verifica antes de usar en laboratorio</span>
+  </footer>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
